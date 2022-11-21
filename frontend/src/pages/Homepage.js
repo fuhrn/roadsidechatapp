@@ -1,8 +1,30 @@
-import React from 'react'
-import { Container, Box, Text, TabList, Tabs, Tab, TabPanel, TabPanels } from "@chakra-ui/react"
-import Login from '../components/authentication/Login';
-import Signup from '../components/authentication/Signup';
+import React, { useEffect } from "react";
+import {
+  Container,
+  Box,
+  Text,
+  TabList,
+  Tabs,
+  Tab,
+  TabPanel,
+  TabPanels,
+} from "@chakra-ui/react";
+import Login from "../components/authentication/Login";
+import Signup from "../components/authentication/Signup";
+import { useNavigate } from "react-router-dom";
+
 const Homepage = () => {
+  const navigate = useNavigate();
+
+  // como cuando un usuario se loguea la info se guarda en LocalStorage...
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("userInfo"));
+    // si esta logueado, no pueda quedarse en la homepage...
+    if (user) {
+      navigate("/");
+    }
+  }, [navigate]);
+
   return (
     <Container maxW="xl" centerContent>
       <Box
@@ -45,6 +67,6 @@ const Homepage = () => {
       </Box>
     </Container>
   );
-}
+};
 
-export default Homepage
+export default Homepage;
