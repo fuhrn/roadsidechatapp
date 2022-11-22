@@ -81,11 +81,11 @@ const fetchChats = asyncHandler(async (req, res) => {
           path: "latestMessage.sender",
           select: "name pic email",
         });
-        console.log("backend fetchChats:", results);
+        // console.log("backend fetchChats:", results);
         res.status(200).send(results);
       });
   } catch (error) {
-    console.log("error: ", error);
+    // console.log("error: ", error);
     res.status(400);
     throw new Error(error.message);
   }

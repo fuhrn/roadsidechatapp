@@ -24,7 +24,7 @@ const MyChats = ({ fetchAgain }) => {
       // "/api/chat" ejecuta /backend/controllers/chatControllers.js -> fetchChats
       const { data } = await axios.get("/api/chat", config);
       // este console.log no lo ve
-      console.log("data: ", data);
+      // console.log("data: ", data);
       setChats(data);
     } catch (error) {
       toast({
