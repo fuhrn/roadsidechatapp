@@ -25,7 +25,7 @@ import ProfileModal from "./ProfileModal";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ChatLoading from "./ChatLoading";
-import UserListItem from "../userAvatar/userListItem";
+import UserListItem from "../userAvatar/UserListItem";
 
 const SideDrawer = () => {
   const [search, setSearch] = useState("");

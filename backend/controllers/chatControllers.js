@@ -13,7 +13,7 @@ const accessChat = asyncHandler(async (req, res) => {
   // necesito yo, logged user, identificar al usuario con quien voy a
   // "create or fetch" un chat. Si el chat no existe, lo voy a crear.
   const { userId } = req.body;
-  console.log("yo", userId);
+  console.log("logged user", userId);
 
   if (!userId) {
     console.log("UserId param not sent with request");
@@ -72,7 +72,7 @@ const fetchChats = asyncHandler(async (req, res) => {
     Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
       .populate("users", "-password")
       .populate("groupAdmin", "-password")
-      // .populate("latestMessage")
+      .populate("latestMessage")
       // sort from new to old ones
       .sort({ updatedAt: -1 })
       .then(async (results) => {
