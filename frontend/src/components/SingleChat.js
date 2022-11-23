@@ -15,9 +15,13 @@ import { getSender, getSenderFull } from "../config/ChatLogics";
 import { ChatState } from "../context/ChatProvider";
 import ProfileModal from "./miscellaneous/ProfileModal";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
-import "../components/miscellaneous/styles.css"
+import "../components/miscellaneous/styles.css";
 import ScrollableChat from "./ScrollableChat";
+import io from "socket.io-client";
+import Lottie from "react-lottie";
+import animationData from '../animations/typing.json'
 
+const ENDPOINT = "http://localhost:4000";
 var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
@@ -27,33 +31,83 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [socketConnected, setSocketConnected] = useState(false);
   const [typing, setTyping] = useState(false);
   const [istyping, setIsTyping] = useState(false);
+
   const toast = useToast();
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: animationData,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
 
   const { user, selectedChat, setSelectedChat } = ChatState();
 
-    useEffect(() => {
-      fetchMessages();
+  useEffect(() => {
+    // asi nos conectamos con el servidor socket: se genera un objeto socket que
+    // es enviado al server desde donde el cual es capturado por:
+    // io.on("connection", (socket) => {
+    //     ....
+    // })
+    socket = io(ENDPOINT);
 
-      selectedChatCompare = selectedChat;
-      // eslint-disable-next-line
-    }, [selectedChat]);
+    // vamos a crear un room para "user"
+    socket.emit("setup", user);
+    socket.on("connected", () => setSocketConnected(true)); 
+    socket.on("typing", () => setIsTyping(true));
+    socket.on("stop typing", () => setIsTyping(false));
+  });
+
+  // este useEffect corre cada vez que se actualiza el estado de la aplicacion, o sea, siempre
+  useEffect(() => {
+    socket.on("message received", (newMessageReceived) => {
+      if (
+        // cuando cargo chat page no tento seleccionada ninguna room por default..
+        !selectedChatCompare || // -> if chat is not selected yet or doesn't match current chat
+        selectedChatCompare._id !== newMessageReceived.chat._id
+      ) {
+        // give notification instead of message
+        // if (!notification.includes(newMessageRecieved)) {
+        //   setNotification([newMessageRecieved, ...notification]);
+        //   setFetchAgain(!fetchAgain);
+        // }
+      } else {
+        // significa que estoy conectado a un room y ese room es el mismo que el indicado en newMessageReceived.chat._id
+        setMessages([...messages, newMessageReceived]);
+      }
+    });
+  });
+
+  useEffect(() => {
+    fetchMessages();
+
+    // estoy guardando el estado de selectedChat en selectedChatCompare
+    // y asi podre decidir si envio los mensajes al usuario o envio una notificacion a ese usuario
+    selectedChatCompare = selectedChat;
+    // eslint-disable-next-line
+  }, [selectedChat]);
 
   const typingHandler = (e) => {
     setNewMessage(e.target.value);
 
+    // no me funcionaba porque en server no esta emitiendo connected (por error)
     if (!socketConnected) return;
 
     if (!typing) {
       setTyping(true);
-      //  socket.emit("typing", selectedChat._id);
+      socket.emit("typing", selectedChat._id);
     }
+
+    // debounce type function
     let lastTypingTime = new Date().getTime();
     var timerLength = 3000;
     setTimeout(() => {
       var timeNow = new Date().getTime();
       var timeDiff = timeNow - lastTypingTime;
       if (timeDiff >= timerLength && typing) {
-        //  socket.emit("stop typing", selectedChat._id);
+        socket.emit("stop typing", selectedChat._id);
         setTyping(false);
       }
     }, timerLength);
@@ -79,7 +133,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       setMessages(data);
       setLoading(false);
 
-      // socket.emit("join chat", selectedChat._id);
+      // el usuario se une al room con el nombre selectedChat._id
+      socket.emit("join chat", selectedChat._id);
     } catch (error) {
       toast({
         title: "Error Occured!",
@@ -94,7 +149,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
   const sendMessage = async (event) => {
     if (event.key === "Enter" && newMessage) {
-      // socket.emit("stop typing", selectedChat._id);
+      socket.emit("stop typing", selectedChat._id);
       try {
         const config = {
           headers: {
@@ -111,7 +166,11 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
           },
           config
         );
-        // socket.emit("new message", data);
+        console.log(
+          "SingleChat -> message procesed by messageController/sendMessage: ",
+          data
+        );
+        socket.emit("new message", data);
         setMessages([...messages, data]);
       } catch (error) {
         toast({
@@ -181,12 +240,12 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         <FormControl onKeyDown={sendMessage} id="first-name" isRequired mt={3}>
           {istyping ? (
             <div>
-              {/* <Lottie
+              <Lottie
                 options={defaultOptions}
                 // height={50}
                 width={70}
                 style={{ marginBottom: 15, marginLeft: 0 }}
-              /> */}
+              />
             </div>
           ) : (
             <></>

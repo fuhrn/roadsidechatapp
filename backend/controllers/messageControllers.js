@@ -37,6 +37,7 @@ const sendMessage = asyncHandler(async (req, res) => {
 
   try {
     var message = await Message.create(newMessage);
+    console.log("message from backend 1: ", message);
 
     message = await message.populate("sender", "name pic");
     message = await message.populate("chat");
@@ -45,7 +46,10 @@ const sendMessage = asyncHandler(async (req, res) => {
       select: "name pic email",
     });
 
+    // aqui actualizando el latestMessage del room 'chatId'
     await Chat.findByIdAndUpdate(req.body.chatId, { latestMessage: message });
+
+    console.log("message from backend 2: ", message);
 
     res.json(message);
   } catch (error) {
