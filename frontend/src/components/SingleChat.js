@@ -1,6 +1,7 @@
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import {
   Box,
+  Center,
   FormControl,
   IconButton,
   Input,
@@ -14,6 +15,8 @@ import { getSender, getSenderFull } from "../config/ChatLogics";
 import { ChatState } from "../context/ChatProvider";
 import ProfileModal from "./miscellaneous/ProfileModal";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
+import "../components/miscellaneous/styles.css"
+import ScrollableChat from "./ScrollableChat";
 
 var socket, selectedChatCompare;
 
@@ -62,6 +65,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     try {
       const config = {
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${user.token}`,
         },
       };
@@ -94,7 +98,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       try {
         const config = {
           headers: {
-            "Content-type": "application/json",
+            "Content-Type": "application/json",
             Authorization: `Bearer ${user.token}`,
           },
         };
@@ -150,10 +154,11 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         <UpdateGroupChatModal
           fetchAgain={fetchAgain}
           setFetchAgain={setFetchAgain}
+          fetchMessages={fetchMessages}
         />
       </Text>
       <Box
-        d="flex"
+        display="flex"
         flexDir="column"
         justifyContent="flex-end"
         p={3}
@@ -164,10 +169,12 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         overflowY="hidden"
       >
         {loading ? (
-          <Spinner size="xl" w={20} h={20} alignSelf="center" margin="auto" />
+          <Center h="100%">
+            <Spinner size="xl" w={20} h={20} />
+          </Center>
         ) : (
           <div className="messages">
-            {/* <ScrollableChat messages={messages} /> */}
+            <ScrollableChat messages={messages} />
           </div>
         )}
 
