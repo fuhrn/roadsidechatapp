@@ -26,6 +26,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ChatLoading from "./ChatLoading";
 import UserListItem from "../userAvatar/UserListItem";
+import { getSender } from "../../config/ChatLogics";
+import NotificationBadge from 'react-notification-badge';
+import { Effect } from "react-notification-badge";
 
 const SideDrawer = () => {
   const [search, setSearch] = useState("");
@@ -38,7 +41,9 @@ const SideDrawer = () => {
     setSelectedChat,
     user,
     chats,
-    setChats
+    setChats,
+    notification,
+    setNotification
   } = ChatState();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -149,8 +154,29 @@ const handleSearch = async () => {
         <div>
           <Menu>
             <MenuButton p={1}>
+              <NotificationBadge
+                count={notification.length}
+                effect={Effect.SCALE}
+              />
               <BellIcon fontSize="2xl" m={1} />
             </MenuButton>
+            <MenuList pl={2}>
+              {!notification.length && "No New Messages"}
+              {notification.map((notif) => (
+                <MenuItem
+                  key={notif._id}
+                  onClick={() => {
+                    setSelectedChat(notif.chat);
+                    // elimino (filtro) esta notificacion del array notification
+                    setNotification(notification.filter((n) => n !== notif));
+                  }}
+                >
+                  {notif.chat.isGroupChat
+                    ? `New Message in ${notif.chat.chatName}`
+                    : `New Message from ${getSender(user, notif.chat.users)}`}
+                </MenuItem>
+              ))}
+            </MenuList>
           </Menu>
           <Menu>
             <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
@@ -188,8 +214,10 @@ const handleSearch = async () => {
               />
               <Button onClick={handleSearch}>Go</Button>
             </Box>
-            {loading ? <ChatLoading /> : (
-              searchResult?.map(user => (
+            {loading ? (
+              <ChatLoading />
+            ) : (
+              searchResult?.map((user) => (
                 <UserListItem
                   key={user._id}
                   // user is person I want to chat to
@@ -198,7 +226,7 @@ const handleSearch = async () => {
                 />
               ))
             )}
-            { loadingChat && <Spinner ml="auto" display="flex" />}
+            {loadingChat && <Spinner ml="auto" display="flex" />}
           </DrawerBody>
         </DrawerContent>
       </Drawer>

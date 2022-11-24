@@ -43,7 +43,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     },
   };
 
-  const { user, selectedChat, setSelectedChat } = ChatState();
+  const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState();
 
   useEffect(() => {
     // asi nos conectamos con el servidor socket: se genera un objeto socket que
@@ -69,10 +69,11 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         selectedChatCompare._id !== newMessageReceived.chat._id
       ) {
         // give notification instead of message
-        // if (!notification.includes(newMessageRecieved)) {
-        //   setNotification([newMessageRecieved, ...notification]);
-        //   setFetchAgain(!fetchAgain);
-        // }
+        if (!notification.includes(newMessageReceived)) {
+          setNotification([newMessageReceived, ...notification]);
+          // update list or our chats so latest message in each of them is updated accordingly
+          setFetchAgain(!fetchAgain);
+        }
       } else {
         // significa que estoy conectado a un room y ese room es el mismo que el indicado en newMessageReceived.chat._id
         setMessages([...messages, newMessageReceived]);

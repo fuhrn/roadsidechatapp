@@ -55,6 +55,7 @@ io.on("connection", (socket) => {
   socket.on("setup", (userData) => {
     // socket.join lo uso cuando quiero unir el socket a un room, que en este caso, el room se llama igual al id del user
     socket.join(userData._id);
+    // lo uso para controlar si puedo usar lottie component en SingleChat.js/typingHandler
     socket.emit("connected");
   });
 
