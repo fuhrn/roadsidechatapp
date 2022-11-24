@@ -21,7 +21,7 @@ import io from "socket.io-client";
 import Lottie from "react-lottie";
 import animationData from '../animations/typing.json'
 
-const ENDPOINT = "http://localhost:4000";
+const ENDPOINT = "https://mern-chat-nes.herokuapp.com/";
 var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
